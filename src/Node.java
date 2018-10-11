@@ -1,12 +1,50 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
+class Logger{
+    private static final String logFilePath= "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerLog.txt";
+    PrintWriter printWriter;
+    private static File file;
+    //use it when running from terminal
+    //private static final String logFilePath= "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerLog.txt";
+    public Logger(){
+        file = new File(logFilePath);
+        try {
+            if (file.createNewFile()) {
+                printWriter = new PrintWriter(logFilePath);
+                printWriter.println("Log creation started at ");
+                printWriter.close();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void Message(String message)
+    {
+        if(file.exists())
+        {
+            try {
+                printWriter = new PrintWriter(logFilePath);
+                printWriter.println(LocalDateTime.now() +" -- "+ message);
+                printWriter.close();
+            }
+            catch (Exception ex){
+                System.out.println("Something wrong with Logger");
+            }
+        }
+    }
+}
 
 class PeerInfo{
+    private Logger logger = new Logger();
+    private static final String filePath = "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerInfo.cfg";
     private int _columnId;
     public int getColumnId(){
         return _columnId;
@@ -29,17 +67,20 @@ class PeerInfo{
 
     public PeerInfo(){
         String thisLine = null;
-        File file = new File("PeerInfo.cfg");
+        //to be used while running from terminal
+        //String filePath = "PeerInfo.cfg";
+        File file = new File(filePath).getAbsoluteFile();
         try {
             FileReader fReader = new FileReader(file);
             BufferedReader breader = new BufferedReader(new FileReader(file));
+            logger.Message("Started reading from PeerInfo");
             while ((thisLine = breader.readLine()) != null) {
                 System.out.println(thisLine);
             }
         }
         catch (Exception ex)
         {
-
+            System.out.println(ex);
         }
     }
 }
@@ -48,7 +89,10 @@ class PeerInfo{
 
 public class Node {
     private ServerSocket server;
+    private PeerInfo peerInfo;
+    private Logger logger = new Logger();
     public Node(String ipAddress) throws Exception {
+        peerInfo = new PeerInfo();
         InetAddress lint =  InetAddress.getLocalHost();
         InetAddress loopBack =  InetAddress.getLoopbackAddress();
         if (ipAddress != null && !ipAddress.isEmpty())
