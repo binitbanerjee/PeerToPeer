@@ -3,8 +3,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
 class Logger{
     private static final String logFilePath= "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerLog.txt";
     PrintWriter printWriter;
@@ -45,27 +46,34 @@ class Logger{
 class PeerInfo{
     private Logger logger = new Logger();
     private static final String filePath = "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerInfo.cfg";
-    private int _columnId;
+    private int _peerId;
     public int getColumnId(){
-        return _columnId;
+        return _peerId;
     }
 
     private String _hostName;
-    public int getHostName(){
-        return _columnId;
+    public String getHostName(){
+        return _hostName;
     }
 
     private int _portNumber;
     public int getPortNumber(){
-        return _columnId;
+        return _portNumber;
     }
 
     private boolean _hasFile;
-    public int getHasFile(){
-        return _columnId;
+    public boolean getHasFile(){
+        return _hasFile;
     }
+    List peers = new ArrayList();
+
 
     public PeerInfo(){
+
+
+    }
+    public void init()
+    {
         String thisLine = null;
         //to be used while running from terminal
         //String filePath = "PeerInfo.cfg";
@@ -75,14 +83,22 @@ class PeerInfo{
             BufferedReader breader = new BufferedReader(new FileReader(file));
             logger.Message("Started reading from PeerInfo");
             while ((thisLine = breader.readLine()) != null) {
-                System.out.println(thisLine);
+                String[] data = thisLine.split(" ");
+                PeerInfo p = new PeerInfo();
+                p._peerId = Integer.parseInt(data[0]);
+                p._hostName = data[1];
+                p._portNumber =Integer.parseInt(data[2]);
+                p._hasFile = Boolean.parseBoolean(data[3]);
+                peers.add(p);
             }
+
         }
         catch (Exception ex)
         {
             System.out.println(ex);
         }
     }
+
 }
 
 
@@ -93,6 +109,7 @@ public class Node {
     private Logger logger = new Logger();
     public Node(String ipAddress) throws Exception {
         peerInfo = new PeerInfo();
+        peerInfo.init();
         InetAddress lint =  InetAddress.getLocalHost();
         InetAddress loopBack =  InetAddress.getLoopbackAddress();
         if (ipAddress != null && !ipAddress.isEmpty())
