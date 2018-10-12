@@ -1,10 +1,12 @@
 import java.io.*;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Date;
+
 
 class Logger{
     private static final String logFilePath= "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerLog.txt";
@@ -32,8 +34,9 @@ class Logger{
         if(file.exists())
         {
             try {
+                Date dt = new Date();
                 printWriter = new PrintWriter(logFilePath);
-                printWriter.println(LocalDateTime.now() +" -- "+ message);
+                printWriter.println(dt.getDate() +" -- "+ message);
                 printWriter.close();
             }
             catch (Exception ex){
@@ -102,46 +105,74 @@ class PeerInfo{
 }
 
 
-
-public class Node {
-    private ServerSocket server;
-    private PeerInfo peerInfo;
-    private Logger logger = new Logger();
-    public Node(String ipAddress) throws Exception {
-        peerInfo = new PeerInfo();
-        peerInfo.init();
-        InetAddress lint =  InetAddress.getLocalHost();
-        InetAddress loopBack =  InetAddress.getLoopbackAddress();
-        if (ipAddress != null && !ipAddress.isEmpty())
-            this.server = new ServerSocket(0, 1, InetAddress.getByName(ipAddress));
-        else
-            this.server = new ServerSocket(4201, 1, InetAddress.getLocalHost());
+class MyClient extends Thread {
+    private Logger _logger;
+    public MyClient(Logger log) {
+        _logger = log;
     }
-    private void listen() throws Exception {
-        String data = null;
-        Socket client = this.server.accept();
-        String clientAddress = client.getInetAddress().getHostAddress();
-        System.out.println("\r\nNew connection from " + clientAddress);
 
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(client.getInputStream()));
-        while ( (data = in.readLine()) != null ) {
-            System.out.println("\r\nMessage from " + clientAddress + ": " + data);
+    public void Run(){
+        try {
+            String sentence;
+            String modifiedSentence;
+            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+            Socket clientSocket = new Socket("10.192.165.196", 4203);
+            System.out.println("Running Client on port 4203");
+            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+            BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            sentence = inFromUser.readLine();
+            outToServer.writeBytes(sentence + 'n');
+            modifiedSentence = inFromServer.readLine();
+            System.out.println("FROM SERVER: " + modifiedSentence);
+            clientSocket.close();
+        }
+        catch (Exception ex) {
+            _logger.Message(ex.getMessage());
         }
     }
-    public InetAddress getSocketAddress() {
-        return this.server.getInetAddress();
+}
+
+class MyServer extends Thread{
+    private Logger _logger;
+    public MyServer(Logger log) {
+        _logger = log;
+
     }
 
-    public int getPort() {
-        return this.server.getLocalPort();
+    public void Run(){
+        try {
+            String clientSentence;
+            String capitalizedSentence;
+            ServerSocket welcomeSocket = new ServerSocket(4201);
+            System.out.println("Server started at 4201");
+            while (true) {
+                Socket connectionSocket = welcomeSocket.accept();
+                BufferedReader inFromClient =
+                        new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+                DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+                clientSentence = inFromClient.readLine();
+                System.out.println("Received: " + clientSentence);
+                capitalizedSentence = clientSentence.toUpperCase() + 'n';
+                outToClient.writeBytes(capitalizedSentence);
+            }
+        }
+        catch (Exception ex) {
+            _logger.Message(ex.getMessage());
+        }
     }
+}
+
+public class Node {
+
     public static void main(String[] args) throws Exception {
-        Node app = new Node("");
-        System.out.println("\r\nRunning Server: " +
-                "Host=" + app.getSocketAddress().getHostAddress() +
-                " Port=" + app.getPort());
+        Logger log = new Logger();
+        MyServer tcpServer = new MyServer(log);
+        tcpServer.Run();
+        MyClient tcpClient = new MyClient(log);
+        tcpClient.run();
 
-        app.listen();
+        /*System.out.println("\r\nRunning Server: " +
+                "Host=" + app.getSocketAddress().getHostAddress() +
+                " Port=" + app.getPort());*/
     }
 }
