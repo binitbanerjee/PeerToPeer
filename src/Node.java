@@ -6,6 +6,8 @@ import java.util.List;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Date;
+import java.util.Calendar;
+
 
 
 class Logger{
@@ -34,9 +36,9 @@ class Logger{
         if(file.exists())
         {
             try {
-                Date dt = new Date();
+                Calendar dt = Calendar.getInstance();
                 printWriter = new PrintWriter(logFilePath);
-                printWriter.println(dt.getDate() +" -- "+ message);
+                printWriter.println(dt.getTime() +" -- "+ message);
                 printWriter.close();
             }
             catch (Exception ex){
@@ -105,19 +107,21 @@ class PeerInfo{
 }
 
 
-class MyClient extends Thread {
+class MyClient implements Runnable {
     private Logger _logger;
     public MyClient(Logger log) {
         _logger = log;
     }
 
-    public void Run(){
+    //@Override
+    public void run(){
         try {
+            System.out.println("Running Client on port 4201");
             String sentence;
             String modifiedSentence;
             BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-            Socket clientSocket = new Socket("10.192.165.196", 4203);
-            System.out.println("Running Client on port 4203");
+            Socket clientSocket = new Socket("10.192.165.196", 4201);
+            System.out.println("Running Client on port 4201");
             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
             BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             sentence = inFromUser.readLine();
@@ -127,19 +131,21 @@ class MyClient extends Thread {
             clientSocket.close();
         }
         catch (Exception ex) {
+            System.out.println(ex.getMessage());
             _logger.Message(ex.getMessage());
         }
     }
 }
 
-class MyServer extends Thread{
+class MyServer implements Runnable{
     private Logger _logger;
     public MyServer(Logger log) {
         _logger = log;
 
     }
 
-    public void Run(){
+    //@Override
+    public void run() {
         try {
             String clientSentence;
             String capitalizedSentence;
@@ -155,8 +161,7 @@ class MyServer extends Thread{
                 capitalizedSentence = clientSentence.toUpperCase() + 'n';
                 outToClient.writeBytes(capitalizedSentence);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.Message(ex.getMessage());
         }
     }
@@ -167,9 +172,13 @@ public class Node {
     public static void main(String[] args) throws Exception {
         Logger log = new Logger();
         MyServer tcpServer = new MyServer(log);
-        tcpServer.Run();
+        Thread tServer = new Thread(tcpServer,"Server");
+        tServer.start();
+        Thread.sleep(5000);
+        System.out.println("Now Client is being Started");
         MyClient tcpClient = new MyClient(log);
-        tcpClient.run();
+        Thread tClient = new Thread(tcpClient,"Client");
+        tClient.start();
 
         /*System.out.println("\r\nRunning Server: " +
                 "Host=" + app.getSocketAddress().getHostAddress() +
