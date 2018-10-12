@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.Calendar;
 
 
@@ -193,7 +192,7 @@ class Client{
     }
 }
 
-class Server {
+class Server  {
 
     private static final int sPort = 4201;   //The server will be listening on this port number
     static Logger _logger ;
@@ -281,65 +280,6 @@ class Server {
     }
 }
 
-class MyClient implements Runnable {
-    private Logger _logger;
-    public MyClient(Logger log) {
-        _logger = log;
-    }
-
-    //@Override
-    public void run(){
-        try {
-            _logger.Message("Running Client on port 4201");
-            String sentence;
-            String modifiedSentence;
-            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-            Socket clientSocket = new Socket("10.192.153.66", 4201);
-            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-            BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            sentence = "Sample Data";
-            outToServer.writeBytes(sentence + 'n');
-            modifiedSentence = inFromServer.readLine();
-            System.out.println("FROM SERVER: " + modifiedSentence);
-            clientSocket.close();
-        }
-        catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            _logger.Message(ex.getMessage());
-        }
-    }
-}
-
-class MyServer implements Runnable{
-    private Logger _logger;
-    public MyServer(Logger log) {
-        _logger = log;
-
-    }
-
-    //@Override
-    public void run() {
-        try {
-            String clientSentence;
-            String capitalizedSentence;
-            ServerSocket welcomeSocket = new ServerSocket(4202);
-            _logger.Message("Server started at 4201");
-            while (true) {
-                Socket connectionSocket = welcomeSocket.accept();
-                BufferedReader inFromClient =
-                        new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-                DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-                clientSentence = inFromClient.readLine();
-                System.out.println("Received: " + clientSentence);
-                capitalizedSentence = clientSentence.toUpperCase() + 'n';
-                outToClient.writeBytes(capitalizedSentence);
-            }
-        } catch (Exception ex) {
-            _logger.Message(ex.getMessage());
-        }
-    }
-}
-
 public class Node {
 
     public static void main(String[] args) throws Exception {
@@ -349,8 +289,8 @@ public class Node {
         //Thread tServer = new Thread(tcpServer,"Server");
         //tServer.start();
         //Thread.sleep(5000);
-        System.out.println("Now Client is being Started");
-        Client tcpClient = new Client();
+        //System.out.println("Now Client is being Started");
+        //Client tcpClient = new Client();
         //Thread tClient = new Thread(tcpClient,"Client");
         //tClient.start();
 
