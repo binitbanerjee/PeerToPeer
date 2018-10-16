@@ -2,14 +2,19 @@ import java.io.*;
 import java.net.Socket;
 
 public class Client implements Runnable{
-    Socket requestSocket;           //socket connect to the server
-    ObjectOutputStream out;         //stream write to the socket
-    ObjectInputStream in;          //stream read from the socket
-    String message;                //message send to the server
-    String MESSAGE;                //capitalized message read from the server
-    Logger _logger;
-    public void Client(Logger log) {
-        _logger = log;
+    private Socket _socket;           //socket connect to the server
+    private ObjectOutputStream out;         //stream write to the socket
+    private ObjectInputStream in;          //stream read from the socket
+    private String message;                //message send to the server
+    private String MESSAGE;                //capitalized message read from the server
+    private Logger _logger;
+    private yte[] _payload;
+
+    public Client(socket socket, byte[] payload) {
+        this._logger = Logger.getInstance();
+        this._payload = payload;
+        this._socket = socket;
+        
     }
 
     @Override
@@ -17,7 +22,7 @@ public class Client implements Runnable{
     {
         try{
             //create a socket to connect to the server
-            requestSocket = new Socket("localhost", 4201);
+            requestSocket = _socket;
             System.out.println("Connected to localhost in port 8000");
             //initialize inputStream and outputStream
             out = new ObjectOutputStream(requestSocket.getOutputStream());
@@ -28,11 +33,7 @@ public class Client implements Runnable{
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
             while(true)
             {
-                System.out.print("Hello, please input a sentence: ");
-                //read a sentence from the standard input
-                message = bufferedReader.readLine();
-                //Send the sentence to the server
-                sendMessage(message);
+                sendMessage(_payload);
                 //Receive the upperCase sentence from the server
                 MESSAGE = (String)in.readObject();
                 //show the message to the user
@@ -67,10 +68,9 @@ public class Client implements Runnable{
         }
     }
     //send a message to the output stream
-    void sendMessage(String msg)
+    void sendMessage(Byte[] msg)
     {
         try{
-            //stream write the message
             out.writeObject(msg);
             out.flush();
         }

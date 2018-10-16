@@ -67,7 +67,7 @@ public class Server implements Runnable {
                         //receive the message sent from the client
                         message = (String) in.readObject();
                         //show the message to the user
-                        System.out.println("Receive message: " + message + " from client " + no);
+                        System.out.println("Receive message: " + message + " from client 33" + no);
                         //Capitalize all letters in the message
                         MESSAGE = message.toUpperCase();
                         //send MESSAGE back to the client

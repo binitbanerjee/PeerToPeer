@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PeerInfo{
-    private Logger logger = new Logger();
+    private Logger logger = Logger.getIns;
     private static final String filePath = "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerInfo.cfg";
     private int _peerId;
     public int getColumnId(){
