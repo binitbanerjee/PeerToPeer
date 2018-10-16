@@ -15,7 +15,11 @@ public class CommonProperties {
     private static int pieceSize;
     private static int numberOfPieces;
 
-    public void readCommonFileInfo(Reader reader) throws Exception {
+    public CommonProperties(){
+        init();
+    }
+
+    private void init(){
      try {
           
          BufferedReader br = new BufferedReader(new FileReader("Common.cfg"));
@@ -83,10 +87,14 @@ public static void setUnchokingInterval(int ui) {
     unchokingInterval=ui;
 }
 
-public static void getOptimisticUnchokingInterval(int oui) {
+public static void getOptimisticUnchokingInterval(int oui)
+{
 		optimisticUnchokingInterval=oui;
-    }
- public static void setFileName(String fname) {
+}
+
+
+    public static void setFileName(String fname)
+    {
 		fileName=fname;
 }
 public static void setFileSize(int fsize) {

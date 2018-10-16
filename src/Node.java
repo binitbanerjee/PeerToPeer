@@ -1,47 +1,84 @@
 import java.io.*;
 import java.net.Socket;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.HashMap;
+
 public class Node {
 
-    public static void splitFile(File f) throws IOException {
-        int partCounter = 1;//I like to name parts from 001, 002, 003, ...
-        //you can change it to 0 if you want 000, 001, ...
+    private static Node host = new Node();
+    private NetworkInfo network;
+    ConnectionHelper connectionManager;
+    public static boolean allPeersReceivedFiles = false;
 
-        int sizeOfFiles = 1024 * 1024;// 1MB
-        byte[] buffer = new byte[sizeOfFiles];
+    private Peer() {
+        network = LoadPeerList.getPeer(peerProcessMain.getId());
+        connectionManager = ConnectionManager.getInstance();
+    }
 
-        String fileName = f.getName();
+    public static Node getInstance() {
+        return host;
+    }
 
-        //try-with-resources to ensure closing stream
-        try (FileInputStream fis = new FileInputStream(f);
-             BufferedInputStream bis = new BufferedInputStream(fis)) {
+    // TODO: Use filePieces of filehandler instead of network
+    public boolean hasFile() {
+        return network.hasSharedFile();
+    }
+    // TODO: Optimize by maintaining index upto which all files have been received
 
-            int bytesAmount = 0;
-            while ((bytesAmount = bis.read(buffer)) > 0) {
-                //write each chunk of data into separate file with different number in name
-                String filePartName = String.format("%s.%03d", fileName, partCounter++);
-                File newFile = new File(f.getParent(), filePartName);
-                try (FileOutputStream out = new FileOutputStream(newFile)) {
-                    out.write(buffer, 0, bytesAmount);
-                }
+    public NetworkInfo getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(NetworkInfo network) {
+        this.network = network;
+    }
+
+    public void listenForConnections() throws IOException {
+
+        ServerSocket socket = null;
+        try {
+            socket = new ServerSocket(network.getPort());
+            // TODO: End connection when all peers have received files
+            while (false == allPeersReceivedFiles) {
+                Socket peerSocket = socket.accept();
+                connectionManager.createConnection(peerSocket);
+            }
+        } catch (Exception e) {
+            System.out.println("Closed exception");
+        } finally {
+            socket.close();
+        }
+    }
+
+    public void createTCPConnections() {
+        HashMap<String, NetworkInfo> map = LoadPeerList.getPeerList();
+        int myNumber = network.getNumber();
+        for (String peerId : map.keySet()) {
+            NetworkInfo peerInfo = map.get(peerId);
+            if (peerInfo.getNumber() < myNumber) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        createConnection(peerInfo);
+                    }
+                }.start();
+
             }
         }
     }
 
-
-    public static void main(String[] args) throws Exception {
-        splitFile(new File("D:\\destination\\myFile.mp4"));
-        Logger log = new Logger();
-        Server tcpServer = new Server(log);
-        //tcpServer.init();
-        Thread tServer = new Thread(tcpServer,"Server");
-        tServer.start();
-        //Thread.sleep(5000);
-        //System.out.println("Now Client is being Started");
-        //Thread tClient = new Thread(tcpServer,"Server");
-        Client tcpClient = new Client();
-        Thread tClient = new Thread(tcpClient,"Client");
-        tClient.run();
-
+    private void createConnection(NetworkInfo peerInfo) {
+        int peerPort = peerInfo.getPort();
+        String peerHost = peerInfo.getHostName();
+        try {
+            Socket clientSocket = new Socket(peerHost, peerPort);
+            connectionManager.createConnection(clientSocket, peerInfo.getPeerId());
+            Thread.sleep(300);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
