@@ -4,7 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-public class PeerInfo1{
+public class PeerConfigHelper{
    
     public static final String CONFIG_FILE_NAME = "PeerInfo.cfg";
      ArrayList peers=new ArrayList();
@@ -13,7 +13,7 @@ public class PeerInfo1{
      private Boolean _hasFile;
 
      public void readPeerInfo(int peerID){
-           PeerInfo1 p=new PeerInfo1();
+           PeerConfigHelper p=new PeerConfigHelper();
             String[] config = readConfig(peerID);
             p. _hostName = config[1];
             p._portNumber = Integer.parseInt(config[2]);
