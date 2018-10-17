@@ -1,104 +1,89 @@
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 public class Server implements Runnable {
+    private Socket socket;
+    private DataInputStream in;
+    private FileHandler fileHandler;
+    private boolean isAlive;
 
-    private static final int sPort = 4201;   //The server will be listening on this port number
-    static Logger _logger ;
-    public Server(Logger log){
-        _logger = log;
+    // client thread initialization
+    public Server(Socket socket, String peerId, FileHandler data) {
+        init(socket, data);
+    }
+
+    private void init(Socket socket, FileHandler data) {
+        this.socket = socket;
+        fileHandler = data;
+        isAlive = true;
+        try {
+            in = new DataInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    // server thread initialization
+    public Server(Socket socket, FileHandler data) {
+        init(socket, data);
     }
 
     @Override
-    public void run(){
-        try{
-           init();
-        }
-        catch (Exception ex){
-
-        }
+    public void run() {
+        receiveMessage();
     }
 
-    public void init() throws Exception {
-        System.out.println("The server is running.");
-        ServerSocket listener = new ServerSocket(sPort);
-        int clientNum = 1;
+    protected void receiveMessage() {
+        // System.out.println("Receive started");
+        while (isAlive()) {
+            // System.out.println("Receive started");
+            int messageLength = Integer.MIN_VALUE;
+            messageLength = receiveMessageLength();
+            if (!isAlive()) {
+                continue;
+            }
+            byte[] payload = new byte[messageLength];
+            receiveMessagePayload(payload);
+            fileHandler.addPayload(payload);
+            // System.out.println("Receive finished");
+        }
+
+    }
+
+    private synchronized boolean isAlive() {
+        // TODO Auto-generated method stub
+        return isAlive;
+    }
+
+    private int receiveMessageLength() {
+        int len = Integer.MIN_VALUE;
+        byte[] messageLength = new byte[4];
         try {
-            while (true) {
-                new Handler(listener.accept(), clientNum,_logger).start();
-                System.out.println("Client " + clientNum + " is connected!");
-                clientNum++;
-            }
-        } finally {
-            listener.close();
+            receiveRawData(messageLength);
+            len = ByteBuffer.wrap(messageLength).getInt();
+        } catch (Exception e) {
+            // isAlive = false;
+            e.printStackTrace();
         }
-
+        return len;
     }
 
-    /**
-     * A handler thread class.  Handlers are spawned from the listening
-     * loop and are responsible for dealing with a single client's requests.
-     */
-    private class Handler extends Thread {
-        private String message;    //message received from the client
-        private String MESSAGE;    //uppercase message send to the client
-        private Socket connection;
-        private ObjectInputStream in;    //stream read from the socket
-        private ObjectOutputStream out;    //stream write to the socket
-        private int no;        //The index number of the client
-        private Logger _logger;
-        public Handler(Socket connection, int no,Logger log) {
-            this.connection = connection;
-            this.no = no;
-            _logger = log;
-        }
+    private void receiveMessagePayload(byte[] payload) {
+        receiveRawData(payload);
+    }
 
-        public void run() {
-            try {
-                //initialize Input and Output streams
-                out = new ObjectOutputStream(connection.getOutputStream());
-                out.flush();
-                in = new ObjectInputStream(connection.getInputStream());
-                try {
-                    while (true) {
-                        //receive the message sent from the client
-                        message = (String) in.readObject();
-                        //show the message to the user
-                        System.out.println("Receive message: " + message + " from client 33" + no);
-                        //Capitalize all letters in the message
-                        MESSAGE = message.toUpperCase();
-                        //send MESSAGE back to the client
-                        sendMessage(MESSAGE);
-                    }
-                } catch (ClassNotFoundException classnot) {
-                    System.err.println("Data received in unknown format");
-                }
-            } catch (IOException ioException) {
-                System.out.println("Disconnect with Client " + no);
-            } finally {
-                //Close connections
-                try {
-                    in.close();
-                    out.close();
-                    connection.close();
-                } catch (IOException ioException) {
-                    System.out.println("Disconnect with Client " + no);
-                }
-            }
-        }
-
-        public void sendMessage(String msg) {
-            try {
-                out.writeObject(msg);
-                out.flush();
-                System.out.println("Send message: " + msg + " to Client " + no);
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
+    private void receiveRawData(byte[] message) {
+        try {
+            in.readFully(message);
+        } catch (EOFException e) {
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
 }
-

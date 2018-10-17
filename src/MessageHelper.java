@@ -13,10 +13,10 @@ public class MessageHelper {
     }
 
     private static MessageHelper _messageHelper;
-    private SharedFile sharedFile;
+    private FileInfo sharedFile;
 
     private MessageHelper() {
-        sharedFile = SharedFile.getInstance();
+        sharedFile = new FileInfo();
     }
 
     public static synchronized MessageHelper getInstance() {
@@ -26,7 +26,7 @@ public class MessageHelper {
         return _messageHelper;
     }
 
-    public synchronized Type getType(byte type) {
+    public synchronized static Type getType(byte type) {
         switch (type) {
             case 0:
                 return Type.CHOKE;
@@ -54,21 +54,10 @@ public class MessageHelper {
 
     public synchronized int getMessageLength(Type messageType, int pieceIndex) {
         switch (messageType) {
-            case CHOKE:
-            case UNCHOKE:
+
             case INTERESTED:
             case NOTINTERESTED:
                 return 1;
-            case REQUEST:
-            case HAVE:
-                return 5;
-            case BITFIELD:
-                BitField bitfield = BitField.getInstance();
-                return bitfield.getMessageLength();
-            case PIECE:
-                System.out.println("Shared file" + sharedFile.getPiece(pieceIndex) + " asking for piece " + pieceIndex);
-                int payloadLength = 5 + SharedFile.getInstance().getPiece(pieceIndex).length;
-                return payloadLength;
             case HANDSHAKE:
                 return 32;
         }
@@ -93,26 +82,16 @@ public class MessageHelper {
                 System.arraycopy(havePieceIndex, 0, payload, 1, 4);
                 break;
             case BITFIELD:
-                BitField bitfield = BitField.getInstance();
-                payload = bitfield.getPayload();
+
                 break;
             case REQUEST:
-                payload[0] = 6;
-                byte[] index = ByteBuffer.allocate(4).putInt(pieceIndex).array();
-                System.arraycopy(index, 0, payload, 1, 4);
+
                 break;
             case PIECE:
-                byte[] piece = sharedFile.getPiece(pieceIndex);
-                int pieceSize = piece.length;
-                int totalLength = 5 + pieceSize;
-                payload = new byte[totalLength];
-                payload[0] = 7;
-                byte[] data = ByteBuffer.allocate(4).putInt(pieceIndex).array();
-                System.arraycopy(data, 0, payload, 1, 4);
-                System.arraycopy(piece, 0, payload, 5, pieceSize);
+
                 break;
             case HANDSHAKE:
-                return Handshake.getMessage();
+                return HandShakeHelper.getMessage();
         }
         return payload;
     }
