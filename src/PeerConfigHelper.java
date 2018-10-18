@@ -40,7 +40,7 @@ public class PeerConfigHelper{
                         p.peerId= peerDatas[0];
                         p.hostName = peerDatas[1];
                         p.portNumber = Integer.parseInt(peerDatas[2]);
-                        p.hasFile = Boolean.parseBoolean(peerDatas[3]);
+                        p.hasFile = ((Integer.parseInt(peerDatas[3]))!=0);
                         
                        peers.put(p.peerId, p);
                    
