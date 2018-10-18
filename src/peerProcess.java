@@ -15,7 +15,7 @@ public class peerProcess {
             System.out.println("FolderCreated");
         Node current = Node.getInstance();
         current.createTCPConnections();
-       // current.listenForConnections();
+        current.listenForConnections();
     }
 
     private static void init() {
@@ -26,7 +26,13 @@ public class peerProcess {
         PeerConfigHelper peerConfig = new PeerConfigHelper();
         HandShakeHelper.setId(peerId);
         if (peerConfig.hasFile(peerId)) {
-            //SharedFile.getInstance().splitFile();
+            FileProcess file = new FileProcess();
+            try{
+                file.splitFile();
+            }
+            catch(IOException e){
+                System.out.println(e);
+            }
         }
     }
 
