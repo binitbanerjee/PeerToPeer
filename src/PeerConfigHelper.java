@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 public class PeerConfigHelper{
 
-     private static final String CONFIG_FILE_NAME = "PeerInfo.cfg";
+     private static final String CONFIG_FILE_NAME = "PeerInfo.cfg.txt";
      public static HashMap<String,PeerInfo> peers=null;
      private String _hostName;
      private int _portNumber;
@@ -14,6 +14,7 @@ public class PeerConfigHelper{
      public PeerConfigHelper(){
          readPeerInfo();
      }
+     
 
      public static Boolean hasFile(String peerId)
      {
@@ -34,14 +35,15 @@ public class PeerConfigHelper{
                  peers = new HashMap<>();
                  for (String peerData : config) {
                      String[] peerDatas = peerData.split(" ");
-                     for (String data : peerDatas) {
-                         p = new PeerInfo();
-                         p.hostName = config[1];
-                         p.portNumber = Integer.parseInt(config[2]);
-                         p.hasFile = Boolean.parseBoolean(config[3]);
-                         peers.put(p.peerId, p);
-                     }
-
+                   
+                        p = new PeerInfo();
+                        p.peerId= peerDatas[0];
+                        p.hostName = peerDatas[1];
+                        p.portNumber = Integer.parseInt(peerDatas[2]);
+                        p.hasFile = Boolean.parseBoolean(peerDatas[3]);
+                        
+                       peers.put(p.peerId, p);
+                   
                  }
              }
          }
@@ -55,9 +57,18 @@ public class PeerConfigHelper{
      {
          BufferedReader br = new BufferedReader(new FileReader(CONFIG_FILE_NAME));
         try
-        {
-            String line= br.readLine();
-            String[] config= line.split("\n");
+        {     String key="";
+              String line = br.readLine();
+
+             while (line != null) {
+                key += line;
+                key += "\n";
+              line = br.readLine();
+            }
+             
+           
+            String[] config= key.split("\n");
+           
             return config;
         }
         catch(Exception ex)
