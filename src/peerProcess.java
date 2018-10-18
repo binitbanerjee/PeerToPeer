@@ -15,7 +15,7 @@ public class peerProcess {
             System.out.println("FolderCreated");
         Node current = Node.getInstance();
         current.createTCPConnections();
-        current.listenForConnections();
+       // current.listenForConnections();
     }
 
     private static void init() {

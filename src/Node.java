@@ -15,7 +15,7 @@ public class Node {
     private Node() {
         PeerConfigHelper peerConfig = new PeerConfigHelper();
         peerInfo = peerConfig.getPeerDetails(peerProcess.getPeerId());
-        //connectionHelper = ConnectionHelper.getInstance();
+        connectionHelper = ConnectionHelper.getInstance();
     }
 
     public static Node getInstance()
@@ -60,7 +60,9 @@ public class Node {
         for (String peerId : map.keySet()) {
             PeerInfo peerInfoTemp = map.get(peerId);
             int id = Integer.parseInt(peerInfoTemp.peerId);
+
             if (id < myNumber) {
+               // createConnection(peerInfoTemp);
                 new Thread() {
                     @Override
                     public void run() {
