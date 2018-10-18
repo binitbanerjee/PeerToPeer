@@ -43,7 +43,7 @@ public class Node {
         try {
             socket = new ServerSocket(peerInfo.portNumber);
             // TODO: End connection when all peers have received files
-            while (false == allPeersReceivedFiles) {
+            while (!allPeersReceivedFiles) {
                 Socket peerSocket = socket.accept();
                 connectionHelper.createConnection(peerSocket);
             }
@@ -56,14 +56,15 @@ public class Node {
 
     public void createTCPConnections() {
         HashMap<String, PeerInfo> map = PeerConfigHelper.peers;
-        int myNumber = peerInfo.number;
+        int myNumber =Integer.parseInt(peerInfo.peerId);
         for (String peerId : map.keySet()) {
-            PeerInfo peerInfo = map.get(peerId);
-            if (peerInfo.portNumber < myNumber) {
+            PeerInfo peerInfoTemp = map.get(peerId);
+            int id = Integer.parseInt(peerInfoTemp.peerId);
+            if (id < myNumber) {
                 new Thread() {
                     @Override
                     public void run() {
-                        createConnection(peerInfo);
+                        createConnection(peerInfoTemp);
                     }
                 }.start();
 

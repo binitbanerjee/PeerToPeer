@@ -1,4 +1,5 @@
 import java.io.IOException;
+import  java.io.File;
 
 public class peerProcess {
     private static String peerId;
@@ -7,9 +8,11 @@ public class peerProcess {
     }
 
     public static void main(String args[]) throws IOException {
-        peerId = "1001";
+        peerId = "1002";
         init();
-        //System.out.println(CommonProperties.print());
+        Boolean success = (new File("Peer_"+peerId)).mkdirs();
+        if(success)
+            System.out.println("FolderCreated");
         Node current = Node.getInstance();
         current.createTCPConnections();
         current.listenForConnections();

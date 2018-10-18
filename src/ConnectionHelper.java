@@ -1,26 +1,20 @@
 import java.io.File;
 import java.net.Socket;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class ConnectionHelper {
 
     private static ConnectionHelper connectionManager;
     private HashSet<Connection> allConnections;
-    // private HashMap<String, Connection> interested; // interested but choked
+    private HashMap<String, Connection> interestedPeers; // interested but choked
     private HashSet<Connection> notInterested;
-    // private ArrayList<String> interestedPeerIds;
-    private PriorityQueue<Connection> preferredNeighbors;
+    private PriorityQueue<Connection> preferredNeighbours;
     // Banka
     public HashSet<String> peersWithFullFile = new HashSet<String>();
-    private int k = CommonProperties.getNumberOfPreferredNeighbors();
-    private int m = CommonProperties.getOptimisticUnchokingInterval();
-    private int p = CommonProperties.getUnchokingInterval();
-    private int n = PeerConfigHelper.peers.size();
+    private int numberOfPreferredNeighbours = CommonProperties.getNumberOfPreferredNeighbors();
+    private int optimisticUnchokingInterval = CommonProperties.getOptimisticUnchokingInterval();
+    private int unchokingInterval = CommonProperties.getUnchokingInterval();
+    private int peerCount = PeerConfigHelper.peers.size();
     private FileHandler fileHandler;
 
 
@@ -30,7 +24,7 @@ public class ConnectionHelper {
 
     private ConnectionHelper() {
         notInterested = new HashSet<>();
-        preferredNeighbors = new PriorityQueue<>(k + 1,
+        preferredNeighbours = new PriorityQueue<>(numberOfPreferredNeighbours + 1,
                 (a, b) -> (int) a.getBytesDownloaded() - (int) b.getBytesDownloaded());
 
         fileHandler = new FileHandler();
