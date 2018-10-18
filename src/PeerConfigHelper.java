@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 public class PeerConfigHelper{
 
-     private static final String CONFIG_FILE_NAME = "PeerInfo.cfg.txt";
+     private static final String CONFIG_FILE_NAME = "PeerInfo.cfg";
      public static HashMap<String,PeerInfo> peers=null;
      private String _hostName;
      private int _portNumber;
