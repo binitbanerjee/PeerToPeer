@@ -22,7 +22,7 @@ public class CommonProperties {
     private void init(){
      try {
           
-         BufferedReader br = new BufferedReader(new FileReader("Common.cfg"));
+         BufferedReader br = new BufferedReader(new FileReader("/home/dell/Documents/MS/CN/Project/PeerToPeer/src/Common.cfg"));
      
 
          String st;

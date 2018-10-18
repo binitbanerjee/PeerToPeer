@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PeerInfo{
-    private static final String filePath = "/home/dell/Documents/MS/CN/Project/BitTorrentP/src/PeerInfo.cfg";
+    private static final String filePath = "/home/dell/Documents/MS/CN/Project/PeerToPeer/src/PeerInfo.cfg";
     public int number;
     public String peerId;
     public String hostName;

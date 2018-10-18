@@ -18,7 +18,8 @@ public class Node {
         //connectionHelper = ConnectionHelper.getInstance();
     }
 
-    public static Node getInstance() {
+    public static Node getInstance()
+    {
         return host;
     }
 
